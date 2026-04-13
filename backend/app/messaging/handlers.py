@@ -1,5 +1,3 @@
-import uuid
-
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.messaging.notifier import notify_stock_depleted

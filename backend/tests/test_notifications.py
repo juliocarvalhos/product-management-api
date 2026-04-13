@@ -2,7 +2,6 @@ import json
 import uuid
 from datetime import datetime, timezone
 
-import pytest
 from httpx import AsyncClient
 
 from tests.conftest import StatefulRedisMock

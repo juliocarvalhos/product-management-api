@@ -49,7 +49,7 @@ async def lifespan(app: FastAPI):
     logger.info("shut down complete")
 
 
-from app.core.limiter import limiter
+from app.core.limiter import limiter  # noqa: E402
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -70,7 +70,7 @@ app.state.limiter = limiter
 async def rate_limit_handler(request: Request, exc: RateLimitExceeded) -> JSONResponse:
     return JSONResponse(
         status_code=429,
-        content={"detail": f"Limite de requisições atingido. Tente novamente em instantes."},
+        content={"detail": "Limite de requisições atingido. Tente novamente em instantes."},
     )
 
 _DOCS_PATHS = {"/docs", "/redoc", "/openapi.json"}
@@ -112,7 +112,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-from app.routes import audit_logs, auth, notifications, products
+from app.routes import audit_logs, auth, notifications, products  # noqa: E402
 
 app.include_router(auth.router, prefix=settings.API_V1_PREFIX)
 app.include_router(products.router, prefix=settings.API_V1_PREFIX)
