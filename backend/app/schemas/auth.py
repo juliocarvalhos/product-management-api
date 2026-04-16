@@ -10,7 +10,7 @@ class LoginRequest(BaseModel):
     model_config = {
         "json_schema_extra": {
             "example": {
-                "email": "admin@bagaggio.com",
+                "email": "admin@productmanager.dev",
                 "password": "secret123",
             }
         }
@@ -44,7 +44,7 @@ class UserResponse(BaseModel):
         "json_schema_extra": {
             "example": {
                 "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-                "email": "admin@bagaggio.com",
+                "email": "admin@productmanager.dev",
                 "username": "admin",
                 "role": "admin",
                 "is_active": True,

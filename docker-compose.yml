@@ -3,13 +3,13 @@ services:
   postgres:
     image: postgres:16-alpine
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-bagaggio}
-      POSTGRES_USER: ${POSTGRES_USER:-bagaggio}
+      POSTGRES_DB: ${POSTGRES_DB:-product_manager}
+      POSTGRES_USER: ${POSTGRES_USER:-product_manager}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-bagaggio}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-product_manager}"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -28,7 +28,7 @@ services:
   rabbitmq:
     image: rabbitmq:3.13-management-alpine
     environment:
-      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-bagaggio}
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-product_manager}
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:?RABBITMQ_PASSWORD is required}
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
@@ -47,9 +47,9 @@ services:
     env_file:
       - .env
     environment:
-      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-bagaggio}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-bagaggio}
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-product_manager}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-product_manager}
       REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379/0
-      RABBITMQ_URL: amqp://${RABBITMQ_USER:-bagaggio}:${RABBITMQ_PASSWORD}@rabbitmq:5672/
+      RABBITMQ_URL: amqp://${RABBITMQ_USER:-product_manager}:${RABBITMQ_PASSWORD}@rabbitmq:5672/
       SECRET_KEY: ${SECRET_KEY}
       ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES:-15}
       REFRESH_TOKEN_EXPIRE_DAYS: ${REFRESH_TOKEN_EXPIRE_DAYS:-7}
