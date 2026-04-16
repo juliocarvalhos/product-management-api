@@ -152,7 +152,7 @@ describe('LoginComponent', () => {
 
     it('should show "E-mail ou senha inválidos" toast on a 401 response', () => {
       authService.login.and.returnValue(throwError(() => ({ status: 401 })));
-      component.form.setValue({ email: 'test@example.com', password: 'wrong' });
+      component.form.setValue({ email: 'test@example.com', password: 'wrong-password' });
       component.onSubmit();
 
       expect(messageService.add).toHaveBeenCalledWith(
