@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import CredentialsException, TokenExpiredException
 from app.core.security import (
+    burn_password_check,
     create_access_token,
     create_refresh_token,
     decode_token,
@@ -33,7 +34,10 @@ class AuthService:
 
     async def login(self, email: str, password: str) -> _IssuedTokens:
         user = await self.user_repo.get_by_email(email)
-        if not user or not verify_password(password, user.hashed_password):
+        if not user:
+            burn_password_check(password)  # constant-time: avoid user enumeration
+            raise CredentialsException("Invalid email or password")
+        if not verify_password(password, user.hashed_password):
             raise CredentialsException("Invalid email or password")
         if not user.is_active:
             raise CredentialsException("Inactive user")

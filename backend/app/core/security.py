@@ -1,27 +1,35 @@
 import uuid
 from datetime import datetime, timedelta, timezone
 
-from jose import JWTError, jwt
-from jose.exceptions import ExpiredSignatureError
-from passlib.context import CryptContext
+import bcrypt
+import jwt
 
 from app.config import settings
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
 
 def hash_password(plain_password: str) -> str:
-    return pwd_context.hash(plain_password)
+    return bcrypt.hashpw(plain_password.encode(), bcrypt.gensalt()).decode()
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    return pwd_context.verify(plain_password, hashed_password)
+    try:
+        return bcrypt.checkpw(plain_password.encode(), hashed_password.encode())
+    except ValueError:
+        return False
+
+
+# Hash computed once at import time. Used to spend the same bcrypt time when the
+# e-mail does not exist, so login response time does not reveal registered users.
+_DUMMY_HASH = hash_password(uuid.uuid4().hex)
+
+
+def burn_password_check(plain_password: str) -> None:
+    verify_password(plain_password, _DUMMY_HASH)
 
 
 def _create_token(data: dict, expires_delta: timedelta) -> str:
-    payload = data.copy()
-    payload["exp"] = datetime.now(timezone.utc) + expires_delta
-    payload["iat"] = datetime.now(timezone.utc)
+    now = datetime.now(timezone.utc)
+    payload = {**data, "exp": now + expires_delta, "iat": now}
     return jwt.encode(payload, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
 
 
@@ -43,11 +51,10 @@ def create_refresh_token(user_id: str) -> tuple[str, str]:
 
 def decode_token(token: str) -> dict:
     try:
-        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
-        return payload
-    except ExpiredSignatureError:
+        return jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+    except jwt.ExpiredSignatureError:
         return {"_expired": True}
-    except JWTError:
+    except jwt.InvalidTokenError:
         return {}
 
 
