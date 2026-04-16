@@ -31,12 +31,19 @@ jobs:
         working-directory: backend
         run: ruff check .
 
-      - name: Tests
+      - name: Tests (with coverage)
         working-directory: backend
-        run: pytest --tb=short
+        env:
+          DATABASE_URL: postgresql+asyncpg://ci:ci@localhost:5432/ci
+          RABBITMQ_URL: amqp://ci:ci@localhost:5672/
+          SECRET_KEY: ci-only-secret-not-used-anywhere-else
+        run: |
+          pytest --tb=short --cov=app --cov-report=term-missing:skip-covered
+          echo "### Backend coverage" >> "$GITHUB_STEP_SUMMARY"
+          coverage report --format=markdown >> "$GITHUB_STEP_SUMMARY"
 
   frontend:
-    name: Frontend (build)
+    name: Frontend (tests + build)
     runs-on: ubuntu-latest
 
     steps:
@@ -53,6 +60,22 @@ jobs:
         working-directory: frontend
         run: npm ci
 
+      - name: Tests
+        working-directory: frontend
+        run: npm test -- --watch=false --browsers=ChromeHeadlessNoSandbox
+
       - name: Build
         working-directory: frontend
         run: npm run build -- --configuration production
+
+  docker:
+    name: Docker images (build)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build images
+        run: |
+          cp .env.example .env
+          docker compose build
